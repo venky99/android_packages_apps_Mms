@@ -76,6 +76,29 @@ public class MessagingPreferenceActivity extends PreferenceActivity
     public static final String RETRIEVAL_DURING_ROAMING = "pref_key_mms_retrieval_during_roaming";
     public static final String AUTO_DELETE              = "pref_key_auto_delete";
     public static final String GROUP_MMS_MODE           = "pref_key_mms_group_mms";
+    public static final String MMS_SAVE_LOCATION        = "pref_save_location";
+    public static final String MSG_SIGNATURE            = "pref_msg_signature";
+    public static final String MMS_BREATH               = "mms_breath";
+
+    // Emoji
+    public static final String ENABLE_EMOJIS             = "pref_key_enable_emojis";
+    public static final String ENABLE_QUICK_EMOJIS       = "pref_key_enable_quick_emojis";
+    public static final String SOFTBANK_EMOJIS           = "pref_key_enable_softbank_encoding";
+
+    // Unicode
+    public static final String UNICODE_STRIPPING            = "pref_key_unicode_stripping";
+    public static final String UNICODE_STRIPPING_VALUE      = "pref_key_unicode_stripping_value";
+    public static final int UNICODE_STRIPPING_LEAVE_INTACT  = 0;
+    public static final int UNICODE_STRIPPING_NON_DECODABLE = 1;
+
+    // Split sms
+    public static final String SMS_SPLIT_COUNTER        = "pref_key_sms_split_counter";
+    public static final String PREF_SMS_MULTI_PART      = "pref_key_sms_multi_part";
+    public static final int SMS_MULTI_PART_MIN          = 0;
+    public static final int SMS_MULTI_PART_MAX          = 100;
+    public static final String PREF_SMS_SPLIT           = "pref_key_sms_split";
+
+    // Templates
     public static final String MANAGE_TEMPLATES         = "pref_key_templates_manage";
     public static final String SHOW_GESTURE             = "pref_key_templates_show_gesture";
     public static final String GESTURE_SENSITIVITY      = "pref_key_templates_gestures_sensitivity";
@@ -118,6 +141,8 @@ public class MessagingPreferenceActivity extends PreferenceActivity
     private Preference mSmsLimitPref;
     private Preference mSmsDeliveryReportPref;
     private CheckBoxPreference mSmsSplitCounterPref;
+    private CheckBoxPreference mSmsSplitPref;
+    private Preference mSmsMultiPartPref;
     private Preference mMmsLimitPref;
     private Preference mMmsDeliveryReportPref;
     private Preference mMmsGroupMmsPref;
@@ -173,6 +198,10 @@ public class MessagingPreferenceActivity extends PreferenceActivity
         mSmsLimitPref = findPreference("pref_key_sms_delete_limit");
         mSmsDeliveryReportPref = findPreference("pref_key_sms_delivery_reports");
         mSmsSplitCounterPref = (CheckBoxPreference) findPreference("pref_key_sms_split_counter");
+        mSmsSplitPref = (CheckBoxPreference) findPreference(PREF_SMS_SPLIT);
+        mSmsSplitPref.setChecked(mSmsSplitPref.isChecked() || MmsConfig.getSplitSmsEnabled());
+        mSmsMultiPartPref = findPreference(PREF_SMS_MULTI_PART);
+        setMultiPartSmsSummary();
         mMmsDeliveryReportPref = findPreference("pref_key_mms_delivery_reports");
         mMmsGroupMmsPref = findPreference("pref_key_mms_group_mms");
         mMmsReadReportPref = findPreference("pref_key_mms_read_reports");
@@ -458,6 +487,14 @@ public class MessagingPreferenceActivity extends PreferenceActivity
                     MmsConfig.getSmsToMmsTextThresholdMax()-1,
                     R.string.pref_title_sms_SmsToMmsTextThreshold).show();
 
+        } else if (preference == mSmsMultiPartPref) {
+            new NumberPickerDialog(this,
+                    mSmsMultiPartListener,
+                    getMultiPartSmsSize(this),
+                    SMS_MULTI_PART_MIN,
+                    SMS_MULTI_PART_MAX,
+                    R.string.pref_title_sms_multi_part).show();
+
         } else if (preference == mManageSimPref) {
             startActivity(new Intent(this, ManageSimMessages.class));
 
@@ -551,6 +588,14 @@ public class MessagingPreferenceActivity extends PreferenceActivity
                     setSmsToMmsTextThreshold();
                 }
         };
+
+    NumberPickerDialog.OnNumberSetListener mSmsMultiPartListener =
+        new NumberPickerDialog.OnNumberSetListener() {
+            public void onNumberSet(int value) {
+                setMultiPartSmsSize(MessagingPreferenceActivity.this, value);
+                setMultiPartSmsSummary();
+            }
+    };
 
     @Override
     protected Dialog onCreateDialog(int id) {
@@ -681,9 +726,41 @@ public class MessagingPreferenceActivity extends PreferenceActivity
     }
 
     public static boolean getDirectCallEnabled(Context context) {
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    boolean directCallEnabled = prefs.getBoolean(MessagingPreferenceActivity.DIRECT_CALL_PREF,false);
-    return directCallEnabled;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(DIRECT_CALL_PREF, false);
+    }
+
+    public static boolean getSplitSmsEnabled(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(PREF_SMS_SPLIT, MmsConfig.getSplitSmsEnabled());
+    }
+
+    private void setMultiPartSmsSize(Context context, int value) {
+        SharedPreferences.Editor editPrefs =
+                PreferenceManager.getDefaultSharedPreferences(context).edit();
+        editPrefs.putInt(PREF_SMS_MULTI_PART, value);
+        editPrefs.apply();
+    }
+
+    public static int getMultiPartSmsSize(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt(PREF_SMS_MULTI_PART, MmsConfig.getSmsToMmsTextThreshold());
+    }
+
+    public static boolean getMultiPartSmsEnabled(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return MmsConfig.getMultipartSmsEnabled() && (getMultiPartSmsSize(context) > 0);
+    }
+
+    private void setMultiPartSmsSummary() {
+        if (getMultiPartSmsEnabled(this)) {
+            mSmsMultiPartPref.setSummary(
+                    getString(R.string.pref_summary_sms_multi_part_mms,
+                    getMultiPartSmsSize(this)));
+        } else {
+            mSmsMultiPartPref.setSummary(
+                    getString(R.string.pref_summary_sms_multi_part));
+        }
     }
 
     private void registerListeners() {
