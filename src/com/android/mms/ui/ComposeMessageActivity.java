@@ -2580,7 +2580,6 @@ public class ComposeMessageActivity extends Activity
                                 InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 
         setBackground(); // custom background
-        updateEasySelector();
     }
 
     @Override
