@@ -67,7 +67,6 @@ public class MessagingPreferenceActivity extends PreferenceActivity
     public static final String READ_REPORT_MODE         = "pref_key_mms_read_reports";
     public static final String SMS_DELIVERY_REPORT_MODE = "pref_key_sms_delivery_reports";
     public static final String SMS_SPLIT_MESSAGE        = "pref_key_sms_split_160";
-    public static final String SMS_SPLIT_COUNTER        = "pref_key_sms_split_counter";
     public static final String NOTIFICATION_ENABLED     = "pref_key_enable_notifications";
     public static final String NOTIFICATION_VIBRATE     = "pref_key_vibrate";
     public static final String NOTIFICATION_VIBRATE_WHEN= "pref_key_vibrateWhen";
@@ -104,7 +103,6 @@ public class MessagingPreferenceActivity extends PreferenceActivity
     public static final String GESTURE_SENSITIVITY      = "pref_key_templates_gestures_sensitivity";
     public static final String GESTURE_SENSITIVITY_VALUE= "pref_key_templates_gestures_sensitivity_value";
     public static final String STRIP_UNICODE            = "pref_key_strip_unicode";
-    public static final String ENABLE_EMOJIS            = "pref_key_enable_emojis";
     public static final String ENABLE_QUICK_SMILEY_BTN  = "pref_key_quick_smiley_btn";
     public static final String FULL_TIMESTAMP           = "pref_key_mms_full_timestamp";
     public static final String SENT_TIMESTAMP           = "pref_key_mms_use_sent_timestamp";
