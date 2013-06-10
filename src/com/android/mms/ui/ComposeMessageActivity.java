@@ -262,7 +262,7 @@ public class ComposeMessageActivity extends Activity
 
     private static final int DELETE_MESSAGE_TOKEN  = 9700;
 
-    private static final int CHARS_REMAINING_BEFORE_COUNTER_SHOWN = 10;
+    private static final int CHARS_REMAINING_BEFORE_COUNTER_SHOWN = 30;
 
     private static final long NO_DATE_FOR_DIALOG = -1L;
 
